@@ -8,7 +8,7 @@
 
 body {
   margin: 0;
-  background: #070f0c;
+  background: #0D0620;
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -22,7 +22,8 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .animate-pulse-glow,
   .animate-float-bob,
-  .animate-slide-up {
+  .animate-slide-up,
+  .animate-fade-in {
     animation: none;
   }
 }

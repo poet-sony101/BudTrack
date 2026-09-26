@@ -1,5 +1,7 @@
-import { Lock, Check } from "lucide-react";
-import { JOURNEY_NODES, NODE_COLOR } from "../data/mockData.js";
+import { useState } from "react";
+import { Lock, Check, Sparkles, Trophy } from "lucide-react";
+import { NODE_COLOR } from "../data/mockData.js";
+import LessonModal from "./LessonModal.jsx";
 
 const TYPE_LABEL = {
   checkin: "Money check-in",
@@ -8,43 +10,77 @@ const TYPE_LABEL = {
   streak: "Streak reward",
 };
 
-const OFFSET = 68; // px each node shifts left/right of the center line
+const OFFSET = 64; // px each node shifts left/right of center
 
-export default function JourneyScreen({ onSelectNode }) {
-  const doneCount = JOURNEY_NODES.filter((n) => n.status === "done").length;
-  const progressPct = (doneCount / JOURNEY_NODES.length) * 100;
+export default function JourneyScreen({ nodes, xp, onSelectNode, onCompleteNode }) {
+  const [activeModalNode, setActiveModalNode] = useState(null);
+  const [lockedNotice, setLockedNotice] = useState(null);
+
+  const doneCount = nodes.filter((n) => n.status === "done").length;
+  const progressPct = Math.round((doneCount / nodes.length) * 100);
+
+  const handleNodeClick = (node) => {
+    if (node.status === "locked") {
+      setLockedNotice(`Complete earlier stops to unlock "${node.title}"!`);
+      setTimeout(() => setLockedNotice(null), 2500);
+      return;
+    }
+
+    if (node.type === "invest") {
+      onSelectNode?.(node);
+      return;
+    }
+
+    // Open lesson modal for checkin, lesson, streak
+    setActiveModalNode(node);
+  };
 
   return (
     <div className="px-5 pt-5 pb-32">
-      <h1 className="font-display text-2xl text-text font-semibold mb-1">Keep going, Tobi!</h1>
-      <p className="text-[13px] text-muted mb-5">
-        Budgeting, lessons, and investing — one path.
-      </p>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-1">
+        <div>
+          <h1 className="font-display text-2xl text-text font-bold">Keep going, Tobi!</h1>
+          <p className="text-[12.5px] text-muted">Budgeting, lessons & micro-investing</p>
+        </div>
+        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-lime/15 border border-lime/30 text-lime font-mono text-[12px] font-bold">
+          <Trophy size={13} /> {xp} XP
+        </div>
+      </div>
 
-      <div className="rounded-2xl bg-surface border border-border px-4 py-3.5 flex items-center justify-between mb-8">
+      {/* Progress Card */}
+      <div className="rounded-2xl bg-surface border border-border px-4 py-3.5 flex items-center justify-between mt-4 mb-7 shadow-sm">
         <p className="text-[12.5px] text-muted">
           <span className="text-lime font-mono font-bold">{doneCount}</span> of{" "}
-          {JOURNEY_NODES.length} stops complete
+          {nodes.length} milestones complete
         </p>
-        <div className="flex-1 max-w-[110px] h-2 rounded-full bg-border ml-3 overflow-hidden">
+        <div className="flex-1 max-w-[100px] h-2 rounded-full bg-border ml-3 overflow-hidden">
           <div
-            className="h-full rounded-full bg-lime transition-all"
+            className="h-full rounded-full bg-lime transition-all duration-700"
             style={{ width: `${progressPct}%` }}
           />
         </div>
       </div>
 
+      {/* Temporary locked alert */}
+      {lockedNotice && (
+        <div className="mb-4 rounded-xl bg-pink/15 border border-pink/30 p-2.5 text-center text-pink text-[12px] animate-fade-in">
+          {lockedNotice}
+        </div>
+      )}
+
+      {/* Progression Path */}
       <div className="relative">
-        {/* connecting line, centered */}
+        {/* Center Connecting line */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 top-7 bottom-7 w-1 rounded-full"
+          className="absolute left-1/2 -translate-x-1/2 top-7 bottom-7 w-1.5 rounded-full"
           style={{
             background: `linear-gradient(to bottom, #B4FF39 0%, #B4FF39 ${progressPct}%, #35245F ${progressPct}%, #35245F 100%)`,
           }}
         />
 
         <div className="relative flex flex-col gap-9">
-          {JOURNEY_NODES.map((node, i) => {
+          {nodes.map((node, i) => {
             const Icon = node.icon;
             const offset = i % 2 === 0 ? -OFFSET : OFFSET;
             const color = NODE_COLOR[node.status];
@@ -54,14 +90,13 @@ export default function JourneyScreen({ onSelectNode }) {
             return (
               <div key={node.id} className="flex justify-center">
                 <button
-                  onClick={() => !isLocked && onSelectNode?.(node)}
-                  disabled={isLocked}
-                  className="flex flex-col items-center gap-2"
+                  onClick={() => handleNodeClick(node)}
+                  className="flex flex-col items-center gap-2 group transition-transform active:scale-95"
                   style={{ transform: `translateX(${offset}px)` }}
                 >
                   <div
-                    className={`relative w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border-2 ${
-                      isActive ? "animate-float-bob" : ""
+                    className={`relative w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border-2 transition-all ${
+                      isActive ? "animate-float-bob shadow-lg ring-2 ring-gold/40" : ""
                     }`}
                     style={{
                       backgroundColor: isLocked ? "#271A47" : `${color}22`,
@@ -75,24 +110,25 @@ export default function JourneyScreen({ onSelectNode }) {
                       />
                     )}
                     {node.status === "done" ? (
-                      <Check size={20} className="relative" style={{ color }} />
+                      <Check size={20} className="relative stroke-[2.5]" style={{ color }} />
                     ) : isLocked ? (
-                      <Lock size={16} className="relative text-muted" />
+                      <Lock size={16} className="relative text-muted/60" />
                     ) : (
                       <Icon size={20} className="relative" style={{ color }} />
                     )}
                   </div>
-                  <div className="flex flex-col items-center max-w-[128px]">
-                    <p
-                      className={`text-[10px] uppercase tracking-wide font-medium text-center ${
-                        isLocked ? "text-muted/60" : "text-muted"
+
+                  <div className="flex flex-col items-center max-w-[130px]">
+                    <span
+                      className={`text-[9.5px] uppercase tracking-wider font-mono font-medium text-center ${
+                        isLocked ? "text-muted/50" : "text-muted"
                       }`}
                     >
                       {TYPE_LABEL[node.type]}
-                    </p>
+                    </span>
                     <p
-                      className={`text-[12.5px] leading-tight text-center font-medium ${
-                        isLocked ? "text-muted" : "text-text"
+                      className={`text-[12px] leading-tight text-center font-medium mt-0.5 ${
+                        isLocked ? "text-muted/70" : "text-text"
                       }`}
                     >
                       {node.title}
@@ -104,6 +140,15 @@ export default function JourneyScreen({ onSelectNode }) {
           })}
         </div>
       </div>
+
+      {/* Lesson / Quiz Modal */}
+      {activeModalNode && (
+        <LessonModal
+          node={activeModalNode}
+          onClose={() => setActiveModalNode(null)}
+          onCompleteNode={onCompleteNode}
+        />
+      )}
     </div>
   );
 }

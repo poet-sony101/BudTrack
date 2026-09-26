@@ -33,11 +33,16 @@ export default {
           from: { transform: "translateY(100%)" },
           to: { transform: "translateY(0)" },
         },
+        fadeIn: {
+          from: { opacity: 0 },
+          to: { opacity: 1 },
+        },
       },
       animation: {
         "pulse-glow": "pulseGlow 2.4s ease-in-out infinite",
         "float-bob": "floatBob 2.8s ease-in-out infinite",
         "slide-up": "slideUp 0.35s cubic-bezier(0.32, 0.72, 0, 1)",
+        "fade-in": "fadeIn 0.2s ease-out",
       },
     },
   },
