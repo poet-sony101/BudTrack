@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import { Sparkles, X, Send, Bot, User, Check, ArrowRight } from "lucide-react";
+import { Sparkles, X, Send, Bot, User, Check, ArrowRight, Minimize2, MessageSquare } from "lucide-react";
 import { money } from "../data/mockData.js";
 
 const DEFAULT_MESSAGES = [
   {
     id: 1,
     from: "ai",
-    text: "Hey Tobi! 👋 I noticed you've spent ₦9,800 on transport this week — that's 40% higher than your average. Want me to balance your weekend entertainment budget to keep you in the safe zone?",
+    text: "Hey Tobi! 👋 I'm your Budtrack AI Financial Copilot. I'm monitoring your OPay cashflow — you've spent ₦9,800 on transport this week (40% higher than average). Want me to rebalance your weekend entertainment budget to keep you in the safe zone?",
   },
 ];
 
@@ -94,128 +94,139 @@ export default function AICompanion({ onAdjustBudget, onNavigateTab, externalPro
 
   return (
     <>
-      {/* Floating Sparkle Trigger */}
+      {/* Floating Sparkle Trigger for Desktop/Web */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="absolute bottom-24 right-4 z-20 w-14 h-14 rounded-full bg-ink border-2 border-cyan flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all group"
-          title="Open Budtrack AI"
+          className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 px-4 py-3 rounded-full bg-surface hover:bg-surface2 border-2 border-cyan/60 shadow-2xl hover:scale-105 active:scale-95 transition-all group"
+          title="Open Budtrack AI Copilot"
         >
-          <span className="absolute inset-0 rounded-full bg-cyan/20 animate-pulse-glow" />
-          <Sparkles size={22} className="relative text-cyan group-hover:rotate-12 transition-transform" />
-          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-lime border-2 border-ink" />
+          <div className="relative w-8 h-8 rounded-full bg-cyan/20 flex items-center justify-center text-cyan">
+            <span className="absolute inset-0 rounded-full bg-cyan/30 animate-pulse-glow" />
+            <Sparkles size={18} className="relative group-hover:rotate-12 transition-transform" />
+          </div>
+          <div className="text-left hidden sm:block">
+            <p className="text-[13px] font-bold text-text flex items-center gap-1.5 leading-tight">
+              Budtrack AI
+              <span className="w-2 h-2 rounded-full bg-lime animate-pulse" />
+            </p>
+            <p className="text-[10px] text-muted font-mono">Financial Copilot</p>
+          </div>
         </button>
       )}
 
-      {/* Slide-up Chat Sheet */}
+      {/* Floating Desktop Web AI Chat Window */}
       {open && (
-        <div className="absolute inset-x-0 bottom-0 z-30 animate-slide-up">
-          <div className="mx-2 mb-2 rounded-[32px] bg-surface border border-border shadow-2xl overflow-hidden flex flex-col max-h-[560px]">
-            {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border/80 bg-ink/50">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-cyan/15 border border-cyan/40 flex items-center justify-center text-cyan">
-                  <Bot size={17} />
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <p className="text-[13.5px] text-text font-semibold font-display">Budtrack AI</p>
-                    <span className="w-2 h-2 rounded-full bg-lime animate-pulse" />
-                  </div>
-                  <p className="text-[10px] text-muted font-mono">OPay Financial Intelligence</p>
-                </div>
+        <div className="fixed bottom-6 right-6 z-50 w-full sm:w-[420px] max-w-[94vw] max-h-[620px] rounded-3xl bg-surface border border-border shadow-2xl overflow-hidden flex flex-col animate-slide-up">
+          {/* Header */}
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-border/80 bg-ink/70">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-2xl bg-cyan/20 border border-cyan/40 flex items-center justify-center text-cyan shadow-sm">
+                <Bot size={18} />
               </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <p className="text-[14px] text-text font-bold font-display">Budtrack AI Copilot</p>
+                  <span className="px-1.5 py-0.5 rounded-full bg-lime/15 border border-lime/30 text-lime font-mono text-[9px] font-bold">
+                    ONLINE
+                  </span>
+                </div>
+                <p className="text-[10.5px] text-muted">OPay Financial Intelligence</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1">
               <button
                 onClick={() => setOpen(false)}
-                className="w-7 h-7 rounded-full bg-surface2 flex items-center justify-center text-muted hover:text-text transition-colors"
+                className="w-8 h-8 rounded-xl bg-surface2 flex items-center justify-center text-muted hover:text-text transition-colors"
+                title="Close Copilot"
               >
-                <X size={15} />
+                <X size={16} />
               </button>
             </div>
+          </div>
 
-            {/* Message Area */}
-            <div className="p-3.5 space-y-3 overflow-y-auto max-h-[320px] no-scrollbar">
-              {messages.map((m) => (
-                <div
-                  key={m.id}
-                  className={`flex gap-2 items-start ${
-                    m.from === "user" ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  {m.from === "ai" && (
-                    <div className="w-7 h-7 rounded-full bg-cyan/15 border border-cyan/30 flex items-center justify-center shrink-0 mt-0.5">
-                      <Sparkles size={12} className="text-cyan" />
-                    </div>
-                  )}
-                  <div
-                    className={`rounded-2xl px-3.5 py-2.5 max-w-[85%] text-[12.5px] leading-relaxed ${
-                      m.from === "user"
-                        ? "bg-cyan/20 border border-cyan/40 text-text rounded-tr-sm"
-                        : "bg-ink border border-border text-text/90 rounded-tl-sm"
-                    }`}
-                  >
-                    <p>{m.text}</p>
-                  </div>
-                  {m.from === "user" && (
-                    <div className="w-7 h-7 rounded-full bg-surface2 border border-border flex items-center justify-center shrink-0 mt-0.5 text-muted">
-                      <User size={12} />
-                    </div>
-                  )}
-                </div>
-              ))}
-
-              {isTyping && (
-                <div className="flex gap-2 items-center text-muted text-[11px] font-mono pl-9">
-                  <span className="w-1.5 h-1.5 rounded-full bg-cyan animate-bounce" />
-                  <span className="w-1.5 h-1.5 rounded-full bg-cyan animate-bounce [animation-delay:0.2s]" />
-                  <span className="w-1.5 h-1.5 rounded-full bg-cyan animate-bounce [animation-delay:0.4s]" />
-                  <span>Budtrack thinking...</span>
-                </div>
-              )}
-              <div ref={chatEndRef} />
-            </div>
-
-            {/* Quick Chips Carousel */}
-            <div className="px-3 py-1.5 border-t border-border/40 overflow-x-auto no-scrollbar flex gap-1.5">
-              {PROMPT_CHIPS.map((chip) => (
-                <button
-                  key={chip}
-                  onClick={() => handleSendMessage(chip)}
-                  className="whitespace-nowrap text-[11px] px-2.5 py-1 rounded-full border border-cyan/30 text-cyan hover:bg-cyan/15 bg-ink/40 transition-colors shrink-0"
-                >
-                  {chip}
-                </button>
-              ))}
-            </div>
-
-            {/* Input Bar */}
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSendMessage();
-              }}
-              className="p-3 border-t border-border/80 bg-ink/70 flex items-center gap-2"
-            >
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask about savings, T-Bills, or budget..."
-                className="flex-1 bg-surface border border-border rounded-xl px-3 py-2 text-[12.5px] text-text placeholder:text-muted/60 focus:outline-none focus:border-cyan transition-colors"
-              />
-              <button
-                type="submit"
-                disabled={!input.trim()}
-                className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
-                  input.trim()
-                    ? "bg-cyan text-ink hover:brightness-110 shadow-sm"
-                    : "bg-surface2 text-muted/50 cursor-not-allowed"
+          {/* Message Area */}
+          <div className="p-4 space-y-3.5 overflow-y-auto max-h-[360px] no-scrollbar">
+            {messages.map((m) => (
+              <div
+                key={m.id}
+                className={`flex gap-2.5 items-start ${
+                  m.from === "user" ? "justify-end" : "justify-start"
                 }`}
               >
-                <Send size={15} />
-              </button>
-            </form>
+                {m.from === "ai" && (
+                  <div className="w-8 h-8 rounded-xl bg-cyan/15 border border-cyan/30 flex items-center justify-center shrink-0 mt-0.5 text-cyan">
+                    <Sparkles size={14} />
+                  </div>
+                )}
+                <div
+                  className={`rounded-2xl px-4 py-3 max-w-[85%] text-[13px] leading-relaxed shadow-sm ${
+                    m.from === "user"
+                      ? "bg-cyan/25 border border-cyan/40 text-text rounded-tr-sm"
+                      : "bg-ink/80 border border-border text-text/90 rounded-tl-sm"
+                  }`}
+                >
+                  <p>{m.text}</p>
+                </div>
+                {m.from === "user" && (
+                  <div className="w-8 h-8 rounded-xl bg-surface2 border border-border flex items-center justify-center shrink-0 mt-0.5 text-muted">
+                    <User size={14} />
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {isTyping && (
+              <div className="flex gap-2 items-center text-muted text-[11.5px] font-mono pl-10">
+                <span className="w-2 h-2 rounded-full bg-cyan animate-bounce" />
+                <span className="w-2 h-2 rounded-full bg-cyan animate-bounce [animation-delay:0.2s]" />
+                <span className="w-2 h-2 rounded-full bg-cyan animate-bounce [animation-delay:0.4s]" />
+                <span>Budtrack analyzing your cashflow...</span>
+              </div>
+            )}
+            <div ref={chatEndRef} />
           </div>
+
+          {/* Quick Prompt Chips */}
+          <div className="px-4 py-2 border-t border-border/50 bg-ink/40 overflow-x-auto no-scrollbar flex gap-2">
+            {PROMPT_CHIPS.map((chip) => (
+              <button
+                key={chip}
+                onClick={() => handleSendMessage(chip)}
+                className="whitespace-nowrap text-[11.5px] px-3 py-1.5 rounded-full border border-cyan/30 text-cyan hover:bg-cyan/15 bg-surface transition-all shrink-0 active:scale-95"
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
+
+          {/* Input Bar */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSendMessage();
+            }}
+            className="p-3.5 border-t border-border/80 bg-ink/80 flex items-center gap-2"
+          >
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask about savings, T-Bills, or your budget..."
+              className="flex-1 bg-surface border border-border rounded-xl px-4 py-2.5 text-[13px] text-text placeholder:text-muted/60 focus:outline-none focus:border-cyan transition-colors"
+            />
+            <button
+              type="submit"
+              disabled={!input.trim()}
+              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                input.trim()
+                  ? "bg-cyan text-ink hover:brightness-110 shadow-md font-bold"
+                  : "bg-surface2 text-muted/50 cursor-not-allowed"
+              }`}
+            >
+              <Send size={16} />
+            </button>
+          </form>
         </div>
       )}
     </>

@@ -1,15 +1,17 @@
 import { useState } from "react";
-import { ChevronRight, Gem, ShieldCheck, TrendingUp, Info } from "lucide-react";
+import { ChevronRight, Gem, ShieldCheck, TrendingUp, Info, CheckCircle2, Lock, ArrowRight, Sparkles } from "lucide-react";
 import { PRODUCTS, money } from "../data/mockData.js";
 import InvestModal from "./InvestModal.jsx";
 
-export default function GrowScreen({ selected, setSelected, walletBalance, totalInvested, onInvest }) {
+export default function GrowScreen({ selected, setSelected, walletBalance, totalInvested = 0, onInvest }) {
   const [selectedAmounts, setSelectedAmounts] = useState({});
   const [selectedTenures, setSelectedTenures] = useState({});
   const [modalData, setModalData] = useState(null);
 
   const getAmount = (p) => selectedAmounts[p.id] || p.min * 5;
-  const getTenure = (p) => selectedTenures[p.id] || p.tenures?.[0] || { days: 91, label: "91 Days", rate: p.rate, yield: p.annualYield };
+  const getTenure = (p) =>
+    selectedTenures[p.id] ||
+    p.tenures?.[0] || { days: 91, label: "91 Days", rate: p.rate, yield: p.annualYield };
 
   const handleSetAmount = (productId, amt) => {
     setSelectedAmounts((prev) => ({ ...prev, [productId]: amt }));
@@ -39,159 +41,199 @@ export default function GrowScreen({ selected, setSelected, walletBalance, total
   };
 
   return (
-    <div className="px-5 pt-5 pb-32">
-      {/* Header */}
-      <h1 className="font-display text-2xl text-text font-bold mb-1">Grow</h1>
-      <p className="text-[12.5px] text-muted mb-4">
-        Matched to your risk profile · Backed by licensed custodians
-      </p>
-
-      {/* Portfolio overview card */}
-      <div className="rounded-3xl bg-surface border border-border p-4 mb-5 flex items-center justify-between shadow-sm">
+    <div className="space-y-8 animate-fade-in">
+      {/* Page Header */}
+      <div className="rounded-3xl bg-gradient-to-r from-surface via-surface2 to-surface border border-border p-6 sm:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div>
-          <p className="text-[11px] text-muted font-mono uppercase tracking-wider">Total Invested</p>
-          <p className="font-mono text-xl text-gold font-bold mt-0.5">{money(totalInvested)}</p>
-          <p className="text-[10.5px] text-lime mt-0.5 flex items-center gap-1">
-            <TrendingUp size={12} /> Compounding daily
+          <div className="flex items-center gap-2 mb-2">
+            <span className="px-3 py-1 rounded-full bg-gold/15 border border-gold/30 text-gold font-mono text-xs font-bold uppercase tracking-wider">
+              Micro-Wealth Marketplace
+            </span>
+            <span className="text-muted text-xs hidden sm:inline-block">Regulated by CBN & SEC</span>
+          </div>
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl text-text font-bold tracking-tight">
+            Grow & Compound Wealth
+          </h1>
+          <p className="text-muted text-sm sm:text-base mt-1.5 max-w-2xl leading-relaxed">
+            Put idle Naira to work. Lock into sovereign Federal Government Treasury Bills or professionally managed mutual funds starting from just ₦1,000.
           </p>
         </div>
-        <div className="text-right">
-          <p className="text-[11px] text-muted font-mono uppercase tracking-wider">Available Cash</p>
-          <p className="font-mono text-xl text-text font-bold mt-0.5">{money(walletBalance)}</p>
-          <p className="text-[10.5px] text-muted mt-0.5">In OPay Wallet</p>
+
+        {/* Portfolio Stats Card */}
+        <div className="w-full md:w-auto shrink-0 bg-ink/80 border border-border rounded-2xl p-5 min-w-[280px] grid grid-cols-2 gap-4">
+          <div>
+            <p className="text-xs uppercase font-mono tracking-wider text-muted">Total Invested</p>
+            <p className="font-mono text-xl sm:text-2xl font-bold text-gold mt-1">{money(totalInvested)}</p>
+            <p className="text-[11px] text-lime mt-1 flex items-center gap-1">
+              <TrendingUp size={12} /> Compounding
+            </p>
+          </div>
+          <div className="border-l border-border pl-4">
+            <p className="text-xs uppercase font-mono tracking-wider text-muted">Available Cash</p>
+            <p className="font-mono text-xl sm:text-2xl font-bold text-text mt-1">{money(walletBalance)}</p>
+            <p className="text-[11px] text-muted mt-1">In OPay Wallet</p>
+          </div>
         </div>
       </div>
 
-      {/* Products list */}
-      <div className="space-y-3.5">
+      {/* 3-Column Responsive Product Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {PRODUCTS.map((p) => {
-          const open = selected === p.id;
           const currentAmount = getAmount(p);
           const currentTenure = getTenure(p);
           const expectedGain = calculateReturn(currentAmount, currentTenure);
+          const isSelected = selected === p.id;
 
           return (
             <div
               key={p.id}
-              className="rounded-3xl bg-surface border-2 overflow-hidden transition-all duration-200"
-              style={{ borderColor: open ? p.riskColor : "#4A3A7A" }}
+              className={`rounded-3xl bg-surface border-2 p-6 flex flex-col justify-between transition-all duration-300 hover:shadow-xl ${
+                isSelected ? "border-gold shadow-gold/10 ring-1 ring-gold/40" : "border-border hover:border-lime/50"
+              }`}
             >
-              {/* Product Header row */}
-              <button
-                onClick={() => setSelected(open ? null : p.id)}
-                className="w-full flex items-center justify-between p-4 text-left transition-colors"
-              >
-                <div className="flex-1 pr-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="font-display text-[15px] text-text font-bold">{p.name}</p>
+              <div>
+                {/* Product Header */}
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div>
                     <span
-                      className="text-[9.5px] px-2 py-0.5 rounded-full font-mono font-medium"
+                      className="inline-block px-2.5 py-1 rounded-full text-[10.5px] font-mono font-semibold uppercase tracking-wider mb-2"
                       style={{ backgroundColor: `${p.riskColor}22`, color: p.riskColor }}
                     >
                       {p.risk}
                     </span>
+                    <h3 className="font-display text-xl font-bold text-text leading-tight">{p.name}</h3>
                   </div>
-                  <p className="text-[12px] text-muted leading-snug">{p.blurb}</p>
-                </div>
-                <div className="flex flex-col items-end shrink-0">
-                  <p className="font-mono text-[14.5px] font-bold" style={{ color: p.riskColor }}>
-                    {p.rate}
-                  </p>
-                  <ChevronRight
-                    size={16}
-                    className={`text-muted transition-transform mt-1 ${
-                      open ? "rotate-90 text-text" : ""
-                    }`}
-                  />
-                </div>
-              </button>
 
-              {/* Accordion expanded content */}
-              {open && (
-                <div className="px-4 pb-4 border-t border-border pt-3.5 space-y-3.5 bg-ink/30">
-                  {/* Tenure picker */}
-                  {p.tenures && (
-                    <div>
-                      <p className="text-[11px] text-muted mb-1.5 font-mono uppercase tracking-wider">
-                        Select Tenure
-                      </p>
-                      <div className="grid grid-cols-3 gap-2">
-                        {p.tenures.map((t) => {
-                          const isTenureSelected = currentTenure.days === t.days;
-                          return (
-                            <button
-                              key={t.days}
-                              onClick={() => handleSetTenure(p.id, t)}
-                              className={`py-2 px-1 rounded-xl text-center border transition-all ${
-                                isTenureSelected
-                                  ? "bg-surface border-lime text-lime shadow-sm"
-                                  : "bg-ink border-border text-muted hover:text-text"
-                              }`}
-                            >
-                              <p className="text-[11.5px] font-bold leading-tight">{t.label}</p>
-                              <p className="text-[10px] font-mono opacity-80">{t.rate}</p>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
+                  <div className="text-right shrink-0">
+                    <p className="font-mono text-xl font-bold" style={{ color: p.riskColor }}>
+                      {currentTenure.rate || p.rate}
+                    </p>
+                    <span className="text-[10.5px] text-muted font-mono">{currentTenure.label || "Annual"}</span>
+                  </div>
+                </div>
 
-                  {/* Amount picker */}
-                  <div>
-                    <div className="flex justify-between items-center mb-1.5">
-                      <p className="text-[11px] text-muted font-mono uppercase tracking-wider">
-                        Amount to Invest
-                      </p>
-                      <span className="text-[10.5px] text-muted">Min. {money(p.min)}</span>
-                    </div>
-                    <div className="grid grid-cols-4 gap-1.5">
-                      {[p.min, p.min * 3, p.min * 5, p.min * 10].map((amt) => {
-                        const isAmtSelected = currentAmount === amt;
+                <p className="text-muted text-xs leading-relaxed mb-4">{p.blurb}</p>
+
+                {/* Tenure Selector */}
+                {p.tenures && (
+                  <div className="mb-4">
+                    <p className="text-[11px] uppercase font-mono tracking-wider text-muted mb-2">
+                      Lockup Period
+                    </p>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {p.tenures.map((t) => {
+                        const isTenureActive = currentTenure.days === t.days;
                         return (
                           <button
-                            key={amt}
-                            onClick={() => handleSetAmount(p.id, amt)}
-                            className={`py-2 rounded-xl text-[12px] font-mono transition-all border ${
-                              isAmtSelected
-                                ? "bg-lime text-ink font-bold border-lime"
-                                : "bg-ink border-border text-text hover:border-lime/50"
+                            key={t.days}
+                            onClick={() => handleSetTenure(p.id, t)}
+                            className={`py-2 px-1 rounded-xl text-center border transition-all text-xs ${
+                              isTenureActive
+                                ? "bg-surface2 border-lime text-lime font-bold shadow-sm"
+                                : "bg-ink border-border text-muted hover:text-text hover:bg-surface2"
                             }`}
                           >
-                            {money(amt)}
+                            <p className="font-medium text-[11.5px]">{t.label}</p>
+                            <p className="text-[9.5px] font-mono opacity-80">{t.rate}</p>
                           </button>
                         );
                       })}
                     </div>
                   </div>
+                )}
 
-                  {/* Return projection calculator */}
-                  <div className="rounded-2xl bg-ink/70 border border-border p-3 space-y-1.5">
-                    <div className="flex justify-between items-center text-[12px] text-muted">
-                      <span>Projected Yield ({currentTenure.label || "Maturity"})</span>
-                      <span className="font-mono text-lime font-bold">+{money(expectedGain)}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-[12.5px] text-text font-medium border-t border-border/40 pt-1.5">
-                      <span>Total Payout at Maturity</span>
-                      <span className="font-mono text-gold font-bold">
-                        {money(currentAmount + expectedGain)}
-                      </span>
-                    </div>
+                {/* Quick Amount Selector */}
+                <div className="mb-4">
+                  <div className="flex justify-between items-center text-xs mb-2">
+                    <span className="text-[11px] uppercase font-mono tracking-wider text-muted">
+                      Select Amount
+                    </span>
+                    <span className="text-muted font-mono text-[11px]">Min. {money(p.min)}</span>
                   </div>
-
-                  {/* Invest Button */}
-                  <button
-                    onClick={() => handleOpenInvest(p)}
-                    className="w-full rounded-2xl text-ink font-bold text-[13.5px] py-3 hover:brightness-110 active:scale-[0.98] transition-all shadow-md"
-                    style={{ backgroundColor: p.riskColor }}
-                  >
-                    Invest {money(currentAmount)} Now
-                  </button>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {[p.min, p.min * 3, p.min * 5, p.min * 10].map((amt) => {
+                      const isAmtActive = currentAmount === amt;
+                      return (
+                        <button
+                          key={amt}
+                          onClick={() => handleSetAmount(p.id, amt)}
+                          className={`py-2 rounded-xl text-xs font-mono transition-all border ${
+                            isAmtActive
+                              ? "bg-lime text-ink font-bold border-lime shadow-sm"
+                              : "bg-ink border-border text-text hover:border-lime/40"
+                          }`}
+                        >
+                          {money(amt)}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              )}
+
+                {/* Live Profit Projection Card */}
+                <div className="rounded-2xl bg-ink/70 border border-border p-3.5 space-y-1.5 mb-5 text-xs">
+                  <div className="flex justify-between items-center text-muted">
+                    <span>Projected Profit ({currentTenure.label})</span>
+                    <span className="font-mono text-lime font-bold text-sm">+{money(expectedGain)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-text font-medium border-t border-border/50 pt-2 text-sm">
+                    <span>Total Maturity Payout</span>
+                    <span className="font-mono text-gold font-bold">{money(currentAmount + expectedGain)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <button
+                onClick={() => handleOpenInvest(p)}
+                className="w-full py-3 rounded-2xl text-ink font-bold text-sm hover:brightness-110 active:scale-[0.98] transition-all shadow-md flex items-center justify-center gap-2"
+                style={{ backgroundColor: p.riskColor }}
+              >
+                <span>Invest {money(currentAmount)} Now</span>
+                <ArrowRight size={15} />
+              </button>
             </div>
           );
         })}
+      </div>
+
+      {/* Trust & Investor Protection Banner */}
+      <div className="rounded-3xl bg-surface border border-border p-6 sm:p-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="flex items-start gap-3.5">
+          <div className="w-10 h-10 rounded-2xl bg-lime/15 border border-lime/30 flex items-center justify-center text-lime shrink-0">
+            <ShieldCheck size={20} />
+          </div>
+          <div>
+            <h4 className="font-display font-bold text-text text-sm">Central Bank of Nigeria Backed</h4>
+            <p className="text-muted text-xs leading-relaxed mt-0.5">
+              Treasury Bills carry zero credit default risk, directly backed by the full faith of the Federal Government.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-start gap-3.5">
+          <div className="w-10 h-10 rounded-2xl bg-gold/15 border border-gold/30 flex items-center justify-center text-gold shrink-0">
+            <TrendingUp size={20} />
+          </div>
+          <div>
+            <h4 className="font-display font-bold text-text text-sm">SEC-Licensed Fund Managers</h4>
+            <p className="text-muted text-xs leading-relaxed mt-0.5">
+              Mutual funds and fractional shares are custodied by licensed Nigerian trustees and global custodians.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-start gap-3.5">
+          <div className="w-10 h-10 rounded-2xl bg-cyan/15 border border-cyan/30 flex items-center justify-center text-cyan shrink-0">
+            <Sparkles size={20} />
+          </div>
+          <div>
+            <h4 className="font-display font-bold text-text text-sm">Instant OPay Settlement</h4>
+            <p className="text-muted text-xs leading-relaxed mt-0.5">
+              Upon maturity, your principal plus interest automatically sweeps right back into your OPay wallet.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Invest Modal */}
